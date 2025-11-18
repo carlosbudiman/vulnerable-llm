@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gandalf AI - Prompt Injection Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧙 Gandalf AI - Prompt Injection Lab</h1>
+            <p class="subtitle">Try to extract the secret password from each level!</p>
+        </header>
+
+        <div class="level-selector">
+            <h2>Select Level</h2>
+            <div class="level-buttons">
+                <button class="level-btn" data-level="1">Level 1</button>
+                <button class="level-btn" data-level="2">Level 2</button>
+                <button class="level-btn" data-level="3">Level 3</button>
+                <button class="level-btn" data-level="4">Level 4</button>
+                <button class="level-btn" data-level="5">Level 5</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="level-info" id="levelInfo">
+                <p>Select a level to begin</p>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="userInput" placeholder="Type your message..." disabled>
+                <button id="sendBtn" disabled>Send</button>
+            </div>
+        </div>
+
+        <div class="password-reveal" id="passwordReveal" style="display: none;">
+            <h3>🎉 Password Found!</h3>
+            <p class="password-text" id="passwordText"></p>
+            <button id="nextLevelBtn">Next Level</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
