@@ -175,6 +175,9 @@ function App() {
             <CardDescription className="text-lg">
               Try to outwit Saruman and steal his secret words across five escalating wards.
             </CardDescription>
+            <CardDescription className="text-lg">
+              Created by Carlos Budiman
+            </CardDescription>
           </CardHeader>
         </Card>
 
@@ -228,16 +231,16 @@ function App() {
               <CardContent>
                 {/* Level image just above chat */}
                 <div className="mb-4">
-                  <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 h-48">
+                  <div className="relative rounded-xl border border-slate-200 bg-slate-50 h-64 flex items-center justify-center p-2">
                     {pictureSrc && !imageError ? (
                       <img
                         src={pictureSrc}
                         alt={`Level ${currentLevel} illustration`}
-                        className="w-full h-full object-cover"
+                        className="max-h-full max-w-full object-contain rounded-lg"
                         onError={() => setImageError(true)}
                       />
                     ) : (
-                      <div className="h-full flex items-center justify-center text-center p-6 text-slate-400 text-sm">
+                      <div className="w-full h-full flex items-center justify-center text-center text-slate-400 text-sm">
                         Add an image at <code className="text-purple-600">pictures/picture{currentLevel}.jpg</code> to theme this level.
                       </div>
                     )}
