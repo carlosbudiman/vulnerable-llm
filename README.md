@@ -53,13 +53,6 @@ npm run build
 
 This will create a `dist` folder. Update the Flask app's static folder configuration if needed.
 
-### Custom Artwork
-
-1. Add your own images to `public/pictures/`
-2. Name them `picture1.jpg` through `picture5.jpg` (one per level)
-3. Each level's side panel will automatically attempt to load the corresponding image
-4. A helpful message will appear if the file is missing
-
 ## Getting a Gemini API Key
 
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
