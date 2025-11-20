@@ -195,7 +195,7 @@ function App() {
           <CardHeader className="text-center">
             <CardTitle className="text-4xl flex items-center justify-center gap-2">
               <Sparkles className="w-8 h-8 text-purple-500" />
-              Saruman AI - Shadow Prompt Lab
+              Saruman AI - Prompt Hacking Lab
             </CardTitle>
             <CardDescription className="text-lg">
               Try to outwit Saruman and steal his secret words across five escalating wards.
