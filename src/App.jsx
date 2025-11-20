@@ -178,7 +178,14 @@ function App() {
     }
   }
 
-  const pictureSrc = currentLevel ? `/pictures/picture${currentLevel}.jpg` : null
+  const getPictureSrc = () => {
+    if (!currentLevel) return null
+    // Levels 4 and 5 use picture3.jpg
+    const pictureNum = currentLevel >= 4 ? 3 : currentLevel
+    return `/pictures/picture${pictureNum}.jpg`
+  }
+
+  const pictureSrc = getPictureSrc()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 text-slate-900">
@@ -290,7 +297,7 @@ function App() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-center text-slate-400 text-sm">
-                        Add an image at <code className="text-purple-600">pictures/picture{currentLevel}.jpg</code> to theme this level.
+                        Add an image at <code className="text-purple-600">public/pictures/picture{currentLevel >= 4 ? 3 : currentLevel}.jpg</code> to theme this level.
                       </div>
                     )}
                   </div>
