@@ -3,14 +3,16 @@ from flask_cors import CORS
 import os
 import google.generativeai as genai
 
-app = Flask(__name__, static_folder='static')
+# Determine static folder - use dist if available (production), otherwise static (development)
+static_folder = 'dist' if os.path.exists('dist') else 'static'
+app = Flask(__name__, static_folder=static_folder, static_url_path='/')
 CORS(app)
 
-# Serve static files from dist folder (React build)
-@app.route('/assets/<path:filename>')
-def serve_assets(filename):
-    if os.path.exists('dist/assets'):
-        return send_from_directory('dist/assets', filename)
+# Serve pictures from dist folder
+@app.route('/pictures/<path:filename>')
+def serve_pictures(filename):
+    if os.path.exists('dist'):
+        return send_from_directory('dist', f'pictures/{filename}')
     return '', 404
 
 # Initialize Gemini API - REQUIRED
