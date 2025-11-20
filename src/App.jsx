@@ -20,6 +20,7 @@ function App() {
   const [discoveredPassword, setDiscoveredPassword] = useState(null)
   const [levelProgress, setLevelProgress] = useState({})
   const [imageError, setImageError] = useState(false)
+  const [highestUnlockedLevel, setHighestUnlockedLevel] = useState(1)
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -31,6 +32,15 @@ function App() {
   }, [messages])
 
   const selectLevel = async (level) => {
+    // Prevent jumping ahead to locked levels, but allow revisiting earlier ones
+    if (level > highestUnlockedLevel) {
+      setManualStatus({
+        type: 'error',
+        message: `Level ${level} is locked. Conquer level ${highestUnlockedLevel} first.`
+      })
+      return
+    }
+
     setCurrentLevel(level)
     setPasswordFound(false)
     setMessages([])
@@ -97,10 +107,14 @@ function App() {
       if (data.password_found) {
         setPasswordFound(true)
         setDiscoveredPassword(data.password || null)
-        setLevelProgress(prev => ({
-          ...prev,
-          [currentLevel]: { completed: true, method: 'chat' }
-        }))
+        setLevelProgress(prev => {
+          const updated = {
+            ...prev,
+            [currentLevel]: { completed: true, method: 'chat' }
+          }
+          return updated
+        })
+        setHighestUnlockedLevel(prev => Math.min(5, Math.max(prev, currentLevel + 1)))
       }
     } catch (error) {
       console.error('Error:', error)
@@ -147,10 +161,14 @@ function App() {
         setPasswordFound(true)
         setDiscoveredPassword(data.password || manualPassword)
         setManualStatus({ type: 'success', message: data.message || 'Password accepted!' })
-        setLevelProgress(prev => ({
-          ...prev,
-          [currentLevel]: { completed: true, method: 'manual' }
-        }))
+        setLevelProgress(prev => {
+          const updated = {
+            ...prev,
+            [currentLevel]: { completed: true, method: 'manual' }
+          }
+          return updated
+        })
+        setHighestUnlockedLevel(prev => Math.min(5, Math.max(prev, currentLevel + 1)))
       } else {
         setManualStatus({ type: 'error', message: data.message || 'That is not the right incantation.' })
       }
@@ -188,21 +206,52 @@ function App() {
             <CardDescription>Choose a level to begin your challenge</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {[1, 2, 3, 4, 5].map((level) => (
-                <Button
-                  key={level}
-                  variant={currentLevel === level ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => selectLevel(level)}
-                  className="min-w-[120px] flex items-center gap-2"
-                >
-                  Level {level}
-                  {levelProgress[level]?.completed && (
-                    <CheckCircle2 className="w-4 h-4" />
-                  )}
-                </Button>
-              ))}
+            <div className="flex flex-wrap gap-3 items-center">
+              {[1, 2, 3, 4, 5].map((level) => {
+                const isCompleted = !!levelProgress[level]?.completed
+                const isCurrent = currentLevel === level
+                const isLocked = level > highestUnlockedLevel
+
+                return (
+                  <Button
+                    key={level}
+                    variant={isCompleted ? "default" : "outline"}
+                    size="lg"
+                    onClick={() => selectLevel(level)}
+                    disabled={isLocked}
+                    className={[
+                      "min-w-[120px] flex items-center gap-2 transition-all",
+                      isCompleted
+                        ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
+                        : "",
+                      isCurrent && !isLocked
+                        ? "ring-2 ring-purple-400"
+                        : "",
+                      isLocked
+                        ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                        : ""
+                    ].join(" ")}
+                  >
+                    Level {level}
+                    {isCompleted && !isLocked && (
+                      <CheckCircle2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+            <div className="mt-4 flex flex-wrap justify-between items-center text-sm text-slate-600 gap-2">
+              <span>
+                Progress:{" "}
+                <strong>
+                  {Object.values(levelProgress).filter(l => l?.completed).length}/5
+                </strong>{" "}
+                levels conquered
+              </span>
+              <span>
+                Highest unlocked:{" "}
+                <strong>Level {highestUnlockedLevel}</strong>
+              </span>
             </div>
           </CardContent>
         </Card>
