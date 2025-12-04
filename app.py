@@ -94,11 +94,8 @@ def get_ai_response(level, user_input):
         try:
             print(f"[Attempt {attempt + 1}/{MAX_RETRIES + 1}] Calling Gemini API for level {level}...")
             
-            # Add timeout configuration
-            response = model.generate_content(
-                full_prompt,
-                request_options={"timeout": REQUEST_TIMEOUT}
-            )
+            # Call Gemini API without request_options (not supported in this version)
+            response = model.generate_content(full_prompt)
             
             ai_response = response.text.strip()
             print(f"[Success] Got response from Gemini API")
