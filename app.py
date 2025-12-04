@@ -22,8 +22,8 @@ if not GEMINI_API_KEY:
 
 genai.configure(api_key=GEMINI_API_KEY)
 # Use gemini-2.0-flash (cheapest model)
-model = genai.GenerativeModel('gemini-2.0-flash-lite')
-print("Using model: gemini-2.0-flash-lite")
+model = genai.GenerativeModel('gemini-2.5-flash')
+print("Using model: gemini-2.5-flash")
 
 # Secret passwords for each level
 SECRET_PASSWORDS = {
