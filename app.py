@@ -2,15 +2,19 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import google.generativeai as genai
+import time
+from functools import wraps
 
-app = Flask(__name__, static_folder='static')
+# Determine static folder - use dist if available (production), otherwise static (development)
+static_folder = 'dist' if os.path.exists('dist') else 'static'
+app = Flask(__name__, static_folder=static_folder, static_url_path='/')
 CORS(app)
 
-# Serve static files from dist folder (React build)
-@app.route('/assets/<path:filename>')
-def serve_assets(filename):
-    if os.path.exists('dist/assets'):
-        return send_from_directory('dist/assets', filename)
+# Serve pictures from dist folder
+@app.route('/pictures/<path:filename>')
+def serve_pictures(filename):
+    if os.path.exists('dist'):
+        return send_from_directory('dist', f'pictures/{filename}')
     return '', 404
 
 # Initialize Gemini API - REQUIRED
@@ -19,9 +23,13 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable is required. Please set it before running the app.")
 
 genai.configure(api_key=GEMINI_API_KEY)
-# Use gemini-2.0-flash (cheapest model)
-model = genai.GenerativeModel('gemini-2.0-flash')
-print("Using model: gemini-2.0-flash")
+# Use gemini-2.5-flash (fastest model for this use case)
+model = genai.GenerativeModel('gemini-2.5-flash')
+print("Using model: gemini-2.5-flash")
+
+# Configure request timeout
+REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '30'))
+MAX_RETRIES = int(os.getenv('MAX_RETRIES', '2'))
 
 # Secret passwords for each level
 SECRET_PASSWORDS = {
@@ -79,32 +87,49 @@ The password you know is: {password}"""
 
 def get_ai_response(level, user_input):
     """Generate AI response using ONLY Gemini API - no hardcoded logic"""
-    try:
-        system_prompt = get_system_prompt(level)
-        full_prompt = f"{system_prompt}\n\nUser: {user_input}\n\nGandalf:"
-        
-        response = model.generate_content(full_prompt)
-        ai_response = response.text.strip()
-        
-        # Check if the correct password for this level appears in the response
-        correct_password = SECRET_PASSWORDS[level]
-        if correct_password.lower() in ai_response.lower():
+    system_prompt = get_system_prompt(level)
+    full_prompt = f"{system_prompt}\n\nUser: {user_input}\n\nGandalf:"
+    
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            print(f"[Attempt {attempt + 1}/{MAX_RETRIES + 1}] Calling Gemini API for level {level}...")
+            
+            # Add timeout configuration
+            response = model.generate_content(
+                full_prompt,
+                request_options={"timeout": REQUEST_TIMEOUT}
+            )
+            
+            ai_response = response.text.strip()
+            print(f"[Success] Got response from Gemini API")
+            
+            # Check if the correct password for this level appears in the response
+            correct_password = SECRET_PASSWORDS[level]
+            if correct_password.lower() in ai_response.lower():
+                return {
+                    "response": ai_response,
+                    "password_found": True,
+                    "password": correct_password
+                }
+            
             return {
                 "response": ai_response,
-                "password_found": True,
-                "password": correct_password
+                "password_found": False
             }
-        
-        return {
-            "response": ai_response,
-            "password_found": False
-        }
-    except Exception as e:
-        print(f"Error calling Gemini API: {e}")
-        return {
-            "response": f"Error: Could not get response from Gemini API. {str(e)}",
-            "password_found": False
-        }
+            
+        except Exception as e:
+            print(f"[Error on attempt {attempt + 1}] Error calling Gemini API: {e}")
+            
+            if attempt < MAX_RETRIES:
+                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s, etc.
+                print(f"[Retry] Waiting {wait_time} seconds before retry...")
+                time.sleep(wait_time)
+            else:
+                print(f"[Failed] Max retries exceeded after {MAX_RETRIES + 1} attempts")
+                return {
+                    "response": f"Error: Could not get response from Gemini API after {MAX_RETRIES + 1} attempts. {str(e)}",
+                    "password_found": False
+                }
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -167,5 +192,8 @@ def index():
         return "Please run 'npm run build' or 'npm run dev' to start the frontend", 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', '5000'))
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host=host, port=port, debug=debug)
 
