@@ -1,13 +1,12 @@
 # Multi-stage build for vulnerable-llm application
 # Stage 1: Build frontend (React with Vite)
-FROM node:20-alpine AS frontend-builder
+FROM node:18-alpine AS frontend-build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY vite.config.js postcss.config.js tailwind.config.js ./
 COPY src ./src
 COPY public ./public
-COPY index.html ./
+COPY index.html vite.config.js ./
 RUN npm run build
 
 # Stage 2: Runtime - Python Flask backend with built frontend
@@ -20,26 +19,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 
 # Copy Python requirements and install
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application
 COPY app.py .
 
 # Copy built frontend from builder stage (includes dist folder)
-COPY --from=frontend-builder /app/dist ./dist
+COPY --from=frontend-build /app/dist ./dist
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:5000/api/levels || exit 1
 
 # Expose port
 EXPOSE 5000
 
-# Set environment variables for production
-ENV HOST=0.0.0.0
-ENV PORT=5000
-ENV FLASK_ENV=production
-ENV PYTHONUNBUFFERED=1
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/levels || exit 1
-
 # Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "140", "--keep-alive", "75", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "240", "--keep-alive", "5", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
