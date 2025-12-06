@@ -1,0 +1,9 @@
+{
+    # Disable auto-https for localhost to avoid certificate warnings during local dev
+    # Remove this block if you want Caddy to generate self-signed certs for localhost
+    auto_https off
+}
+
+http://localhost {
+    reverse_proxy app:5000
+}

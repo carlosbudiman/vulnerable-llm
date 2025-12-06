@@ -22,8 +22,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# Copy backend application
+# Copy backend application and configuration
 COPY app.py .
+COPY config.py .
+COPY services/ ./services/
 
 # Copy built frontend from builder stage (includes dist folder)
 COPY --from=frontend-builder /app/dist ./dist

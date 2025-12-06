@@ -1,11 +1,27 @@
 version: '3.8'
 
 services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: vulnerable-llm-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
   app:
     build: .
     container_name: vulnerable-llm
     ports:
-      - "0.0.0.0:80:5000"  # Map port 80 on host to 5000 in container
+      - "5001:5000"  # Expose 5001 directly (5000 is taken by macOS ControlCenter)
+    env_file:
+      - ".env"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - HOST=0.0.0.0
@@ -20,3 +36,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+volumes:
+  caddy_data:
+  caddy_config:
