@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   caddy:
     image: caddy:2-alpine
-    container_name: vulnerable-llm-caddy
+    container_name: saruman-ai-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -17,9 +15,9 @@ services:
 
   app:
     build: .
-    container_name: vulnerable-llm
+    container_name: saruman-ai
     ports:
-      - "5001:5000"  # Expose 5001 directly (5000 is taken by macOS ControlCenter)
+      - "5001:5000"
     env_file:
       - ".env"
     environment:

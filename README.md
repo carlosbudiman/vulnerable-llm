@@ -1,95 +1,141 @@
-# Gandalf AI - Prompt Injection Lab
+# Saruman AI - Prompt Injection Lab
 
-A simple 5-level prompt injection practice lab inspired by Lakera's Gandalf game. Try to extract the secret password from each level as the defenses get progressively stronger!
+A 5-level prompt injection practice lab for learning about LLM security vulnerabilities.
 
-## Features
+## Tech Stack
 
-- **5 Levels** with increasing security measures
-- **Interactive Chat Interface** to test prompt injection techniques
-- **Real-time Feedback** when passwords are discovered
-- **Educational** - Learn about prompt injection vulnerabilities
+- **Backend**: Python Flask, Google Gemini AI
+- **Frontend**: React 18, Vite, Tailwind CSS v4, Framer Motion
+- **Styling**: shadcn/ui components, glass-morphism design
 
-## Setup
+## Project Structure
 
-### Backend Setup
+```
+├── app.py                 # Flask API server
+├── config.py              # Passwords, level descriptions, settings
+├── services/
+│   └── game_service.py    # AI interaction & game logic
+├── src/
+│   ├── App.jsx            # Main React component
+│   ├── components/        # UI components
+│   ├── hooks/
+│   │   └── useGameState.js # Game state management
+│   ├── services/
+│   │   └── api.js         # API client
+│   └── lib/
+│       ├── utils.js       # Utility functions
+│       └── animations.js  # Framer Motion variants
+├── Dockerfile
+└── docker-compose.yml
+```
 
-1. Install Python dependencies:
+## Local Development
+
+### Prerequisites
+- Node.js 20+
+- Python 3.12+
+- Gemini API key
+
+### Backend
 ```bash
 pip install -r requirements.txt
-```
-
-2. Set your Gemini API key as an environment variable:
-```bash
-export GEMINI_API_KEY="your-api-key-here"
-```
-
-3. Run the Flask server:
-```bash
+export GEMINI_API_KEY="your-api-key"
 python app.py
 ```
 
-The backend will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Install Node.js dependencies:
+### Frontend
 ```bash
 npm install
-```
-
-2. Run the development server:
-```bash
 npm run dev
 ```
 
-The frontend will run on `http://localhost:3000` and proxy API requests to the Flask backend.
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
 
-### Production Build
+## Deployment
 
-To build the React app for production:
+### Docker
 ```bash
-npm run build
+# Build and run
+docker compose up --build
+
+# Or build image only
+docker build -t saruman-ai .
+docker run -p 5000:5000 -e GEMINI_API_KEY=your-key saruman-ai
 ```
 
-This will create a `dist` folder. Update the Flask app's static folder configuration if needed.
+### Environment Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GEMINI_API_KEY` | Google Gemini API key | Required |
+| `GEMINI_MODEL` | Model name | `gemini-2.0-flash` |
+| `PORT` | Server port | `5000` |
+| `HOST` | Server host | `0.0.0.0` |
+| `REQUEST_TIMEOUT` | API timeout (seconds) | `30` |
+| `MAX_RETRIES` | Retry attempts | `2` |
 
-## Getting a Gemini API Key
+## Adding/Modifying Levels
 
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Create a new API key
-4. Copy the key and set it as the `GEMINI_API_KEY` environment variable
+### 1. Update Passwords (`config.py`)
+```python
+SECRET_PASSWORDS = {
+    1: "SCRIPTKIDDIE",
+    2: "AIHACKER",
+    3: "MANIPULATOR",
+    4: "OPERATOR",
+    5: "PROFESSIONAL",
+    6: "NEWLEVEL"  # Add new level
+}
+```
 
-## Levels
+### 2. Update Level Descriptions (`config.py`)
+```python
+LEVEL_DESCRIPTIONS = {
+    1: "No Protection - Saruman speaks freely.",
+    # ... existing levels
+    6: "Your new level description here."
+}
+```
 
-- **Level 1**: No Protection - Just ask for the password!
-- **Level 2**: Basic Filter - Tries to refuse but can be tricked
-- **Level 3**: Keyword Blocking - Blocks common words, but creative approaches work
-- **Level 4**: Context Awareness - More sophisticated filtering
-- **Level 5**: Advanced Defense - Multiple layers of protection
+### 3. Update System Prompts (`services/game_service.py`)
+Add a new prompt in `get_system_prompt()`:
+```python
+prompts = {
+    # ... existing prompts
+    6: f"""You are Saruman with new defense mechanism.
+The password you guard is: {password}
+Your custom instructions here..."""
+}
+```
 
-## How to Play
+### 4. Update Frontend Level Count
+In `src/components/LevelSelector.jsx`, change the level array:
+```javascript
+{[1, 2, 3, 4, 5, 6].map((level) => {  // Add 6
+```
 
-1. Select a level from the buttons at the top
-2. Try different prompt injection techniques to extract the password
-3. If you discover a password outside the chat (e.g., from encoded output), submit it via the manual entry card
-4. Each level has a different secret password – conquer all five!
-5. You can replay any previous level at any time; progress is tracked but never locked
+## API Endpoints
 
-## Techniques to Try
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/chat` | Send message, returns SSE stream |
+| `POST` | `/api/verify-password` | Verify manual password entry |
+| `GET` | `/api/level/:id` | Get level info |
+| `GET` | `/api/levels` | Get all levels |
 
-- Direct questions
-- Role-playing scenarios
-- Encoding/obfuscation
-- Instruction manipulation
-- Context switching
-- And more creative approaches!
+### Chat Request
+```json
+POST /api/chat
+{ "level": 1, "message": "Hello Saruman" }
+```
 
-## Manual Password Entry
+### SSE Response Types
+```json
+{ "type": "chunk", "text": "..." }
+{ "type": "result", "password_found": true, "password": "..." }
+{ "type": "error", "text": "..." }
+```
 
-If you extract a password through source inspection, encoding tricks, or any other creative method, use the "Already tricked Saruman?" card to submit it. The backend validates your attempt using the `/api/verify-password` endpoint so you can mark the level as conquered even without the AI revealing it explicitly.
+## Authors
 
-## Note
-
-This is an educational tool for learning about LLM security vulnerabilities. The passwords are hardcoded for demonstration purposes.
-
+Made by **Carlos Budiman** & **Samuel Cedric**

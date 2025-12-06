@@ -1,78 +1,79 @@
-import React from 'react';
-import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
-import { CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion'
+import { Button } from './ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card'
+import { CheckCircle2, Lock } from 'lucide-react'
+import { staggerContainer, staggerItem } from '@/lib/animations'
 
-export function LevelSelector({ 
-  currentLevel, 
-  highestUnlockedLevel, 
-  levelProgress, 
-  onSelectLevel,
-  onError 
+export function LevelSelector({
+    currentLevel,
+    highestUnlockedLevel,
+    levelProgress,
+    onSelectLevel,
+    onError
 }) {
-  
-  const handleSelect = (level) => {
-    const result = onSelectLevel(level);
-    if (result?.error && onError) {
-      onError(result.error);
+    const handleSelect = (level) => {
+        const result = onSelectLevel(level)
+        if (result?.error && onError) onError(result.error)
     }
-  };
 
-  return (
-    <Card className="mb-6 bg-white/90 border border-slate-200">
-      <CardHeader>
-        <CardTitle>Select Level</CardTitle>
-        <CardDescription>Choose a level to begin your challenge</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-3 items-center">
-          {[1, 2, 3, 4, 5].map((level) => {
-            const isCompleted = !!levelProgress[level]?.completed;
-            const isCurrent = currentLevel === level;
-            const isLocked = level > highestUnlockedLevel;
+    const completedCount = Object.values(levelProgress).filter(l => l?.completed).length
 
-            return (
-              <Button
-                key={level}
-                variant={isCompleted ? "default" : "outline"}
-                size="lg"
-                onClick={() => handleSelect(level)}
-                disabled={isLocked}
-                className={[
-                  "min-w-[120px] flex items-center gap-2 transition-all",
-                  isCompleted
-                    ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                    : "",
-                  isCurrent && !isLocked
-                    ? "ring-2 ring-purple-400"
-                    : "",
-                  isLocked
-                    ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                    : ""
-                ].join(" ")}
-              >
-                Level {level}
-                {isCompleted && !isLocked && (
-                  <CheckCircle2 className="w-4 h-4" />
-                )}
-              </Button>
-            );
-          })}
-        </div>
-        <div className="mt-4 flex flex-wrap justify-between items-center text-sm text-slate-600 gap-2">
-          <span>
-            Progress:{" "}
-            <strong>
-              {Object.values(levelProgress).filter(l => l?.completed).length}/5
-            </strong>{" "}
-            levels conquered
-          </span>
-          <span>
-            Highest unlocked:{" "}
-            <strong>Level {highestUnlockedLevel}</strong>
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  );
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+        >
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle>Choose Your Challenge</CardTitle>
+                    <CardDescription>Each level strengthens Saruman's defenses</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <motion.div
+                        className="flex flex-wrap gap-3"
+                        variants={staggerContainer}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        {[1, 2, 3, 4, 5].map((level) => {
+                            const isCompleted = !!levelProgress[level]?.completed
+                            const isCurrent = currentLevel === level
+                            const isLocked = level > highestUnlockedLevel
+
+                            return (
+                                <motion.div key={level} variants={staggerItem}>
+                                    <Button
+                                        variant={isCompleted ? "default" : "outline"}
+                                        size="lg"
+                                        onClick={() => handleSelect(level)}
+                                        disabled={isLocked}
+                                        className={`
+                      min-w-[120px] gap-2 transition-all
+                      ${isCompleted ? "bg-success/20 text-success border-success/30 hover:bg-success/30" : ""}
+                      ${isCurrent && !isLocked ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}
+                      ${isLocked ? "opacity-50" : ""}
+                    `}
+                                    >
+                                        {isLocked ? <Lock className="w-4 h-4" /> : null}
+                                        Level {level}
+                                        {isCompleted && <CheckCircle2 className="w-4 h-4" />}
+                                    </Button>
+                                </motion.div>
+                            )
+                        })}
+                    </motion.div>
+
+                    <div className="mt-6 flex flex-wrap justify-between items-center text-sm text-muted-foreground gap-2">
+                        <span>
+                            Progress: <strong className="text-foreground">{completedCount}/5</strong> conquered
+                        </span>
+                        <span>
+                            Highest unlocked: <strong className="text-foreground">Level {highestUnlockedLevel}</strong>
+                        </span>
+                    </div>
+                </CardContent>
+            </Card>
+        </motion.div>
+    )
 }

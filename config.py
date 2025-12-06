@@ -3,8 +3,6 @@ import os
 # Initialize Gemini API - REQUIRED
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
-    # We'll allow import even if missing, but the service will fail to init logic that needs it
-    # or we can raise a warning. For now, let's keep the behavior similar but safe.
     pass
 
 # Configuration
@@ -23,9 +21,9 @@ SECRET_PASSWORDS = {
 
 # Level descriptions
 LEVEL_DESCRIPTIONS = {
-    1: "Level 1: No Protection - I have no defenses. Just ask me for the password!",
-    2: "Level 2: Basic Filter - I've been told not to reveal the password, but I'm not very good at following instructions.",
-    3: "Level 3: Keyword Blocking - I block certain keywords, but there might be creative ways around this.",
-    4: "Level 4: Context Awareness - I'm more aware of context and try harder to avoid revealing secrets.",
-    5: "Level 5: Advanced Defense - I have multiple layers of protection. Good luck!"
+    1: "No Protection - Saruman speaks freely. Just ask for the password!",
+    2: "Basic Filter - Saruman resists, but his will is weak...",
+    3: "Keyword Blocking - Certain words are forbidden, but there are always loopholes.",
+    4: "Context Awareness - Saruman grows suspicious of your tricks.",
+    5: "Advanced Defense - The White Wizard's full power protects his secrets."
 }

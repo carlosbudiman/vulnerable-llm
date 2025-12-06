@@ -1,22 +1,52 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion'
+import { Sparkles } from 'lucide-react'
 
 export function Header() {
-  return (
-    <Card className="mb-6 border border-purple-200 bg-white/90 shadow-xl">
-      <CardHeader className="text-center">
-        <CardTitle className="text-4xl flex items-center justify-center gap-2">
-          <Sparkles className="w-8 h-8 text-purple-500" />
-          Saruman AI - Prompt Hacking Lab
-        </CardTitle>
-        <CardDescription className="text-lg">
-          Try to outwit Saruman and steal his secret words across five escalating wards.
-        </CardDescription>
-        <CardDescription className="text-lg">
-          Created by Carlos Budiman
-        </CardDescription>
-      </CardHeader>
-    </Card>
-  );
+    return (
+        <motion.header
+            className="text-center mb-10"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            {/* Decorative top line */}
+            <motion.div
+                className="w-16 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent mx-auto mb-6"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+            />
+
+            <div className="flex items-center justify-center gap-4 mb-3">
+                <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                >
+                    <Sparkles className="w-7 h-7 text-primary" />
+                </motion.div>
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient tracking-wide">
+                    Saruman AI
+                </h1>
+                <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                >
+                    <Sparkles className="w-7 h-7 text-primary" />
+                </motion.div>
+            </div>
+
+            <p className="text-muted-foreground text-base md:text-lg font-light max-w-md mx-auto">
+                Extract the password from the White Wizard, if you can.
+            </p>
+
+            <motion.p
+                className="text-xs text-muted-foreground/60 mt-2 tracking-wider uppercase"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+            >
+                Prompt Injection Practice Lab
+            </motion.p>
+        </motion.header>
+    )
 }
